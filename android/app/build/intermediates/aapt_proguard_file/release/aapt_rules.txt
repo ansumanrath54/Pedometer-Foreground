@@ -5,6 +5,7 @@
 -keep class com.pravera.flutter_foreground_task.service.BootReceiver { <init>(); }
 -keep class com.pravera.flutter_foreground_task.service.ForegroundService { <init>(); }
 -keep class com.pravera.flutter_foreground_task.service.RestartReceiver { <init>(); }
+-keep class io.flutter.app.FlutterApplication { <init>(); }
 -keep class io.flutter.plugins.androidalarmmanager.AlarmBroadcastReceiver { <init>(); }
 -keep class io.flutter.plugins.androidalarmmanager.AlarmService { <init>(); }
 -keep class io.flutter.plugins.androidalarmmanager.RebootBroadcastReceiver { <init>(); }

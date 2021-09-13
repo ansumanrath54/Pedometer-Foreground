@@ -19,15 +19,8 @@ void startCallBack() {
 }
 
 void fireAlarm()  {
-  try {
-    NotificationService().initNotification();
-    NotificationService().showNotification(1, "title", "body");
-    print("hello");
-  }
-  catch(e) {
-    print(e);
-  }
-  //print('hello');
+  NotificationService().showNotification(1, "title", "body");
+  print('hello');
 }
 
 class ForegroundTaskHandler implements TaskHandler {
@@ -68,9 +61,6 @@ class ForegroundTaskHandler implements TaskHandler {
 
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
-    // if(await FlutterForegroundTask.isRunningService) {
-    //   return;
-    // }
     stepCount = Pedometer.stepCountStream;
   }
 }
@@ -121,13 +111,12 @@ class _MyAppState extends State<MyApp> {
 
   void _stopForegroundTask() {
     FlutterForegroundTask.stopService();
-    AndroidAlarmManager.cancel(alarmId);
+    //AndroidAlarmManager.cancel(alarmId);
   }
 
   void initState() {
     super.initState();
     _initForegroundTask();
-    //tz.initializeTimeZones();
   }
 
   void dispose() {
@@ -171,35 +160,10 @@ class _MyAppState extends State<MyApp> {
           buttonBuilder('NOTIFY', onPressed: () {
             AndroidAlarmManager.periodic(
               Duration(seconds: 60), alarmId, fireAlarm,
-              exact: true,
-              wakeup: true,
-              rescheduleOnReboot: true
             );
             print("Triggered");
             //fireAlarm();
           },),
-          // SizedBox(height: 20,),
-          // Transform.scale(
-          //   scale: 2,
-          //   child: Switch(
-          //     value: isOn,
-          //     onChanged: (bool value) {
-          //       setState(() {
-          //         isOn = value;
-          //       });
-          //       if (isOn == true) {
-          //         AndroidAlarmManager.periodic(
-          //           Duration(seconds: 10), alarmId, fireAlarm,
-          //           startAt: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 11, 28),);
-          //         // AndroidAlarmManager.oneShotAt(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 18, 43),
-          //         //     alarmId, fireAlarm, wakeup: true);
-          //       } else {
-          //         AndroidAlarmManager.cancel(alarmId);
-          //         print('Alarm Timer Canceled');
-          //       }
-          //     },
-          //   ),
-          // ),
         ],
       ),
     );
