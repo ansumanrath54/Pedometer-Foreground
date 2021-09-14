@@ -6,11 +6,12 @@ import 'package:intl/intl.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:pedometer_foreground/notificationservice.dart';
 
+NotificationService _notificationService = NotificationService();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AndroidAlarmManager.initialize();
-  NotificationService().initNotification();
-
+  _notificationService.initNotification();
   runApp(MyApp());
 }
 
@@ -19,7 +20,7 @@ void startCallBack() {
 }
 
 void fireAlarm()  {
-  NotificationService().showNotification(1, "title", "body");
+  _notificationService.showNotification(1, "title", "body");
   print('hello');
 }
 
@@ -111,7 +112,7 @@ class _MyAppState extends State<MyApp> {
 
   void _stopForegroundTask() {
     FlutterForegroundTask.stopService();
-    //AndroidAlarmManager.cancel(alarmId);
+    AndroidAlarmManager.cancel(alarmId);
   }
 
   void initState() {
@@ -160,6 +161,7 @@ class _MyAppState extends State<MyApp> {
           buttonBuilder('NOTIFY', onPressed: () {
             AndroidAlarmManager.periodic(
               Duration(seconds: 60), alarmId, fireAlarm,
+              startAt: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 8, 0),
             );
             print("Triggered");
             //fireAlarm();

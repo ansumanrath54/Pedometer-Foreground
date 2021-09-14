@@ -1,15 +1,12 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
-  static final NotificationService _notificationService = NotificationService._internal();
-
-  factory NotificationService() {
-    return _notificationService;
-  }
-
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  NotificationService._internal();
+  String _body = """Coronavirus disease (COVID-19) is an infectious disease caused by the SARS-CoV-2 virus.\n
+  Most people infected with the virus will experience mild to moderate respiratory illness and recover without requiring special treatment.\n
+  However, some will become seriously ill and require medical attention.\n
+  Older people and those with underlying medical conditions like cardiovascular disease, diabetes, chronic respiratory disease, or cancer are more likely to develop serious illness.\n
+  Anyone can get sick with COVID-19 and become seriously ill or die at any age.""";
 
   Future<void> initNotification() async {
     final AndroidInitializationSettings initializationSettingsAndroid =
@@ -35,7 +32,7 @@ class NotificationService {
     await flutterLocalNotificationsPlugin.show(
       id,
       title = "Notification",
-      body = "Hello!",
+      body = _body,
       const NotificationDetails(
         android: AndroidNotificationDetails(
             'main_channel',
@@ -43,7 +40,8 @@ class NotificationService {
             'Main channel notifications',
             importance: Importance.max,
             priority: Priority.max,
-            icon: '@drawable/ic_flutternotification'
+            icon: '@drawable/ic_flutternotification',
+            styleInformation: BigTextStyleInformation("")
         ),
         iOS: IOSNotificationDetails(
           sound: 'default.wav',
