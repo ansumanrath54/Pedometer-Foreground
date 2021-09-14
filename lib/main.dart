@@ -19,18 +19,16 @@ void startCallBack() {
   FlutterForegroundTask.setTaskHandler(ForegroundTaskHandler());
 }
 
-void fireAlarm()  {
+void fireAlarm() {
   _notificationService.showNotification(1, "title", "body");
   print('hello');
 }
 
 class ForegroundTaskHandler implements TaskHandler {
-
-  int count =0;
+  int count = 0;
   Stream<StepCount>? stepCount;
-  String steps = '?' , yesterdaySteps = '0';
-
-
+  int steps = 0;
+  int? base;
   @override
   Future<void> onDestroy(DateTime timestamp) async {
     await FlutterForegroundTask.clearAllData();
@@ -39,24 +37,21 @@ class ForegroundTaskHandler implements TaskHandler {
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     count++;
-    if(count<=1) {
-      stepCount!.listen((event) {
-        steps = event.steps.toString();
-        FlutterForegroundTask.updateService(
-          notificationTitle: "Pedometer",
-          notificationText: "Total Steps: $steps     Yesterday Steps: $yesterdaySteps"
-              "\nTime: ${DateFormat("dd-MM-yyyy – kk:mm:ss").format(timestamp)}",
-          callback: null,
-        );
-      }, onError: (error) {
-        steps = "Step Count not Available";
-      },);
-    }
+    if (count <= 1) {
+      stepCount!.listen(
+        (event) {
+          if (base == null) base = event.steps;
+          steps = event.steps - base!;
 
-    if((timestamp.hour == 00) && (timestamp.minute == 00) && (timestamp.second == 00)) {
-      int tSteps = int.parse(steps) - int.parse(yesterdaySteps);
-      yesterdaySteps = tSteps.toString();
-      print("Total Steps in a Day: $yesterdaySteps");
+          FlutterForegroundTask.updateService(
+            notificationTitle: "Pedometer",
+            notificationText: "Total Steps: $steps"
+                "\nTime: ${DateFormat("dd-MM-yyyy – kk:mm:ss").format(timestamp)}",
+            callback: null,
+          );
+        },
+        onError: (error) {},
+      );
     }
   }
 
@@ -67,7 +62,6 @@ class ForegroundTaskHandler implements TaskHandler {
 }
 
 class MyApp extends StatefulWidget {
-
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -78,7 +72,8 @@ class _MyAppState extends State<MyApp> {
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'notification_channel_id',
         channelName: 'Foreground Notification',
-        channelDescription: 'This notification appears when the foreground service is running.',
+        channelDescription:
+            'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
         iconData: NotificationIconData(
@@ -100,14 +95,13 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _startForegroundTask() async {
-    if(await FlutterForegroundTask.isRunningService) {
+    if (await FlutterForegroundTask.isRunningService) {
       return;
     }
     await FlutterForegroundTask.startService(
-      notificationTitle: 'Foreground Service is running',
-      notificationText: 'Tap to return to the app',
-      callback: startCallBack
-    );
+        notificationTitle: 'Foreground Service is running',
+        notificationText: 'Tap to return to the app',
+        callback: startCallBack);
   }
 
   void _stopForegroundTask() {
@@ -151,27 +145,28 @@ class _MyAppState extends State<MyApp> {
       );
     };
 
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           buttonBuilder('START', onPressed: _startForegroundTask),
           buttonBuilder('STOP', onPressed: _stopForegroundTask),
-          buttonBuilder('NOTIFY', onPressed: () {
-            AndroidAlarmManager.periodic(
-              Duration(seconds: 60), alarmId, fireAlarm,
-              startAt: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 8, 0),
-            );
-            print("Triggered");
-            //fireAlarm();
-          },),
+          buttonBuilder(
+            'NOTIFY',
+            onPressed: () {
+              AndroidAlarmManager.periodic(
+                Duration(seconds: 60),
+                alarmId,
+                fireAlarm,
+                startAt: DateTime(DateTime.now().year, DateTime.now().month,
+                    DateTime.now().day, 8, 0),
+              );
+              print("Triggered");
+              //fireAlarm();
+            },
+          ),
         ],
       ),
     );
   }
 }
-
-
-
-
