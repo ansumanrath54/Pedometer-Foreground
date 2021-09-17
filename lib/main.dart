@@ -46,7 +46,7 @@ class ForegroundTaskHandler implements TaskHandler {
           FlutterForegroundTask.updateService(
             notificationTitle: "Pedometer",
             notificationText: "Total Steps: $steps"
-                "\nTime: ${DateFormat("dd-MM-yyyy – kk:mm:ss").format(timestamp)}",
+            "\nTime: ${DateFormat("${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year} - ${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}").format(timestamp)}",
             callback: null,
           );
         },
@@ -87,7 +87,6 @@ class _MyAppState extends State<MyApp> {
         playSound: false,
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
-        interval: 1000,
         autoRunOnBoot: true,
       ),
       printDevLog: true,
@@ -155,18 +154,65 @@ class _MyAppState extends State<MyApp> {
             'NOTIFY',
             onPressed: () {
               AndroidAlarmManager.periodic(
-                Duration(seconds: 60),
+                Duration(minutes: 1),
                 alarmId,
                 fireAlarm,
                 startAt: DateTime(DateTime.now().year, DateTime.now().month,
                     DateTime.now().day, 8, 0),
               );
-              print("Triggered");
-              //fireAlarm();
+              print("Notification Alarm Triggered");
+            },
+          ),
+          buttonBuilder(
+            'FOREGROUND ALARM',
+            onPressed: () {
+              AndroidAlarmManager.periodic(
+                Duration(hours: 1),
+                alarmId,
+                  alarmForegroundTask,
+                startAt: DateTime(DateTime.now().year, DateTime.now().month,
+                    DateTime.now().day, 8, 0),
+              );
+              alarmForegroundTask();
+              print("Foreground Service Alarm Triggered");
             },
           ),
         ],
       ),
     );
   }
+}
+
+void alarmForegroundTask() async {
+  if (await FlutterForegroundTask.isRunningService) {
+    return;
+  }
+  FlutterForegroundTask.init(
+    androidNotificationOptions: AndroidNotificationOptions(
+      channelId: 'notification_channel_id',
+      channelName: 'Foreground Notification',
+      channelDescription:
+      'This notification appears when the foreground service is running.',
+      channelImportance: NotificationChannelImportance.LOW,
+      priority: NotificationPriority.LOW,
+      iconData: NotificationIconData(
+        resType: ResourceType.mipmap,
+        resPrefix: ResourcePrefix.ic,
+        name: 'launcher',
+      ),
+    ),
+    iosNotificationOptions: IOSNotificationOptions(
+      showNotification: true,
+      playSound: false,
+    ),
+    foregroundTaskOptions: ForegroundTaskOptions(
+      autoRunOnBoot: true,
+    ),
+    printDevLog: true,
+  );
+  await FlutterForegroundTask.startService(
+      notificationTitle: 'Foreground Service is running',
+      notificationText: 'Tap to return to the app',
+      callback: startCallBack);
+  print("Hello");
 }
